@@ -1,3 +1,5 @@
+use r8;
+
 fn main() {
-    println!("Hello, world!");
+    r8::Cpu::new();
 }
