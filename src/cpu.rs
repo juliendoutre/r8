@@ -59,10 +59,18 @@ impl Cpu {
     pub fn load(&mut self, path: &str) {
         let mut file = fs::File::open(path).unwrap();
         let program_size = file.read(&mut self.memory[PROGRAM_START..]).unwrap();
-        println!("Loaded {} bytes into memory", program_size);
+        println!("{} bytes loaded into memory", program_size);
     }
 
     pub fn emulate(&mut self) {
+        let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
+
+        match opcode {
+            _ => println!("unknown opcode {}", opcode),
+        }
+
+        self.pc += 2;
+
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
