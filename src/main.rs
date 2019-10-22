@@ -14,4 +14,8 @@ fn main() {
 
     let path: &str = &args[1];
     vm.load(path);
+
+    loop {
+        vm.emulate();
+    }
 }
