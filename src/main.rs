@@ -8,7 +8,7 @@ fn main() {
     let args: Vec<_> = env::args().collect();
 
     if args.len() < 2 {
-        println!("Please enter a ROM path to load.");
+        println!("missing argument: path to a rom file");
         process::exit(0);
     }
 

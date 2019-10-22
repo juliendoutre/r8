@@ -63,6 +63,10 @@ impl Cpu {
     }
 
     pub fn emulate(&mut self) {
+        if self.pc > self.memory.len() - 2 {
+            panic!("stack overflow");
+        }
+
         let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
 
         match opcode {
