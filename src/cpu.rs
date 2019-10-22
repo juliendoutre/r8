@@ -128,37 +128,115 @@ impl Cpu {
                 self.pc += 2;
             }
             0x8 => match opcode | 0x000f {
-                0x0 => {}
-                0x1 => {}
-                0x2 => {}
-                0x3 => {}
-                0x4 => {}
-                0x5 => {}
-                0x6 => {}
-                0x7 => {}
-                0xe => {}
+                0x0 => {
+                    self.registers[binary::get_x(opcode) as usize] =
+                        self.registers[binary::get_y(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x1 => {
+                    self.registers[binary::get_x(opcode) as usize] |=
+                        self.registers[binary::get_y(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x2 => {
+                    self.registers[binary::get_x(opcode) as usize] &=
+                        self.registers[binary::get_y(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x3 => {
+                    self.registers[binary::get_x(opcode) as usize] ^=
+                        self.registers[binary::get_y(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x4 => {
+                    self.registers[binary::get_x(opcode) as usize] +=
+                        self.registers[binary::get_y(opcode) as usize];
+                    // TODO: carry
+                    self.pc += 2;
+                }
+                0x5 => {
+                    self.registers[binary::get_x(opcode) as usize] -=
+                        self.registers[binary::get_y(opcode) as usize];
+                    // TODO: borrow
+                    self.pc += 2;
+                }
+                0x6 => {
+                    // TODO
+                }
+                0x7 => {
+                    // TODO
+                }
+                0xe => {
+                    // TODO
+                }
                 _ => panic!("unknow opcode {}", opcode),
             },
-            0x9 => {}
-            0xa => {}
-            0xb => {}
-            0xc => {}
-            0xd => {}
+            0x9 => match opcode | 0x000f {
+                0 => {
+                    if self.registers[binary::get_x(opcode) as usize]
+                        != self.registers[binary::get_y(opcode) as usize]
+                    {
+                        self.pc += 4;
+                    } else {
+                        self.pc += 2;
+                    }
+                }
+                _ => panic!("unknow opcode {}", opcode),
+            },
+            0xa => {
+                self.I = binary::get_nnn(opcode) as usize;
+                self.pc += 2;
+            }
+            0xb => {
+                self.pc = self.registers[0] as usize + binary::get_nnn(opcode) as usize;
+            }
+            0xc => {
+                // TODO: random
+            }
+            0xd => {
+                // TODO: draw sprite
+            }
             0xe => match opcode | 0x00ff {
-                0x9e => {}
-                0xa1 => {}
+                0x9e => {
+                    // TODO: key pressed
+                }
+                0xa1 => {
+                    // TODO: key not pressed
+                }
                 _ => panic!("unknow opcode {}", opcode),
             },
             0xf => match opcode | 0x00ff {
-                0x07 => {}
-                0x0a => {}
-                0x15 => {}
-                0x18 => {}
-                0x1e => {}
-                0x29 => {}
-                0x33 => {}
-                0x55 => {}
-                0x65 => {}
+                0x07 => {
+                    self.registers[binary::get_x(opcode) as usize] = self.delay_timer;
+                    self.pc += 2;
+                }
+                0x0a => {
+                    // TODO: key is pressed
+                }
+                0x15 => {
+                    self.delay_timer = self.registers[binary::get_x(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x18 => {
+                    self.sound_timer = self.registers[binary::get_x(opcode) as usize];
+                    self.pc += 2;
+                }
+                0x1e => {
+                    self.I += self.registers[binary::get_x(opcode) as usize] as usize;
+                    self.pc += 2;
+                }
+                0x29 => {
+                    // TODO: draw sprite
+                }
+                0x33 => {
+                    // TODO: binary decomposition
+                }
+                0x55 => {
+                    // TODO: save registers
+                }
+                0x65 => {
+                    // TODO: load memory
+                }
                 _ => panic!("unknow opcode {}", opcode),
             },
             _ => panic!("unknow opcode {}", opcode),
