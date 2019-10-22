@@ -1,2 +1,6 @@
+# Build
 /target/
 **/*.rs.bk
+
+# roms
+*.ch8

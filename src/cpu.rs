@@ -1,3 +1,6 @@
+use std::fs;
+use std::io::prelude::*;
+
 pub const MEMORY_LENGTH: usize = 4096;
 pub const REGISTERS_NUMBER: usize = 16;
 pub const STACK_SIZE: usize = 16;
@@ -21,5 +24,11 @@ impl Cpu {
             stack: [0; STACK_SIZE],
             sp: 0,
         }
+    }
+
+    pub fn load(&mut self, path: &str) {
+        let mut file = fs::File::open(path).unwrap();
+        let program_size = file.read(&mut self.memory).unwrap();
+        println!("{}", program_size);
     }
 }
