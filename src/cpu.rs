@@ -121,9 +121,11 @@ impl Cpu {
             },
             0x6 => {
                 self.registers[binary::get_x(opcode) as usize] = binary::get_nn(opcode);
+                self.pc += 2;
             }
             0x7 => {
                 self.registers[binary::get_x(opcode) as usize] += binary::get_nn(opcode);
+                self.pc += 2;
             }
             0x8 => match opcode | 0x000f {
                 0x0 => {}
