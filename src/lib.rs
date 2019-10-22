@@ -1,2 +1,2 @@
-mod cpu;
-pub use cpu::Cpu;
+pub mod binary;
+pub mod cpu;

@@ -1,9 +1,9 @@
-use r8;
+use r8::cpu;
 use std::env;
 use std::process;
 
 fn main() {
-    let mut vm = r8::Cpu::new();
+    let mut vm = cpu::Cpu::new();
 
     let args: Vec<_> = env::args().collect();
 

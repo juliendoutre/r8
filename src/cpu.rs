@@ -1,3 +1,4 @@
+use crate::binary;
 use std::fs;
 use std::io::prelude::*;
 
