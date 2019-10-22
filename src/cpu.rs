@@ -4,7 +4,7 @@ use std::io::prelude::*;
 pub const MEMORY_LENGTH: usize = 4096;
 pub const REGISTERS_NUMBER: usize = 16;
 pub const STACK_SIZE: usize = 16;
-pub const PROGRAM_START: usize = 0x200;
+pub const PROGRAM_START: usize = 512;
 pub const FONTSET_START: usize = 0;
 pub const FONTSET_END: usize = 80;
 
@@ -34,6 +34,8 @@ pub struct Cpu {
     pc: usize,
     stack: [u16; STACK_SIZE],
     sp: usize,
+    delay_timer: u8,
+    sound_timer: u8,
 }
 
 impl Cpu {
@@ -45,6 +47,8 @@ impl Cpu {
             pc: PROGRAM_START,
             stack: [0; STACK_SIZE],
             sp: 0,
+            delay_timer: 0,
+            sound_timer: 0,
         };
 
         &cpu.memory[FONTSET_START..FONTSET_END].copy_from_slice(FONTSET);
@@ -58,5 +62,13 @@ impl Cpu {
         println!("Loaded {} bytes into memory", program_size);
     }
 
-    pub fn emulate(&mut self) {}
+    pub fn emulate(&mut self) {
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+
+        if self.sound_timer > 0 {
+            self.sound_timer -= 1;
+        }
+    }
 }
