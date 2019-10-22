@@ -69,8 +69,60 @@ impl Cpu {
 
         let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
 
-        match opcode {
-            _ => println!("unknown opcode {}", opcode),
+        match (opcode | 0xf000) >> 12 {
+            0x0 => match (opcode | 0x0fff) >> 4 {
+                0x0e0 => {
+                    // TODO: clear the screen
+                }
+                0x0ee => {
+                    // TODO: return
+                }
+                _ => {
+                    // RCA1802 is not implemented
+                }
+            },
+            0x1 => {}
+            0x2 => {}
+            0x3 => {}
+            0x4 => {}
+            0x5 => {}
+            0x6 => {}
+            0x7 => {}
+            0x8 => match (opcode | 0x000f) as u8 {
+                0x0 => {}
+                0x1 => {}
+                0x2 => {}
+                0x3 => {}
+                0x4 => {}
+                0x5 => {}
+                0x6 => {}
+                0x7 => {}
+                0xe => {}
+                _ => panic!("unknow opcode {}", opcode),
+            },
+            0x9 => {}
+            0xa => {}
+            0xb => {}
+            0xc => {}
+            0xd => {}
+            0xe => match (opcode | 0x00ff) as u8 {
+                0x9e => {}
+                0xa1 => {}
+                _ => panic!("unknow opcode {}", opcode),
+            },
+            0xf => match (opcode | 0x00ff) as u8 {
+                0x07 => {}
+                0x0a => {}
+                0x15 => {}
+                0x18 => {}
+                0x1e => {}
+                0x29 => {}
+                0x33 => {}
+                0x55 => {}
+                0x65 => {}
+                _ => panic!("unknow opcode {}", opcode),
+            },
+            _ => panic!("unknow opcode {}", opcode),
         }
 
         self.pc += 2;
