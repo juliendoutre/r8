@@ -9,6 +9,8 @@ pub const STACK_SIZE: usize = 16;
 pub const PROGRAM_START: usize = 512;
 pub const FONTSET_START: usize = 0;
 pub const FONTSET_END: usize = 80;
+pub const SCREEN_WIDTH: usize = 64;
+pub const SCREEN_HEIGHT: usize = 32;
 
 const FONTSET: &[u8; 80] = &[
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -38,6 +40,7 @@ pub struct Cpu {
     sp: usize,
     delay_timer: u8,
     sound_timer: u8,
+    screen: [[bool; SCREEN_WIDTH]; SCREEN_HEIGHT],
 }
 
 impl Cpu {
@@ -51,6 +54,7 @@ impl Cpu {
             sp: 0,
             delay_timer: 0,
             sound_timer: 0,
+            screen: [[false; SCREEN_WIDTH]; SCREEN_HEIGHT],
         };
 
         &cpu.memory[FONTSET_START..FONTSET_END].copy_from_slice(FONTSET);
@@ -74,7 +78,11 @@ impl Cpu {
         match (opcode | 0xf000) >> 12 {
             0x0 => match (opcode | 0x0fff) >> 4 {
                 0x0e0 => {
-                    // TODO: clear the screen
+                    for i in 0..SCREEN_HEIGHT {
+                        for j in 0..SCREEN_WIDTH {
+                            self.screen[i][j] = false;
+                        }
+                    }
                     self.pc += 2;
                 }
                 0x0ee => {
