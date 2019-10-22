@@ -4,6 +4,7 @@ use std::io::prelude::*;
 pub const MEMORY_LENGTH: usize = 4096;
 pub const REGISTERS_NUMBER: usize = 16;
 pub const STACK_SIZE: usize = 16;
+pub const PROGRAM_START: usize = 0x200;
 
 pub struct Cpu {
     memory: [u8; MEMORY_LENGTH],
@@ -28,7 +29,7 @@ impl Cpu {
 
     pub fn load(&mut self, path: &str) {
         let mut file = fs::File::open(path).unwrap();
-        let program_size = file.read(&mut self.memory).unwrap();
-        println!("{}", program_size);
+        let program_size = file.read(&mut self.memory[PROGRAM_START..]).unwrap();
+        println!("Loaded {} bytes into memory", program_size);
     }
 }
