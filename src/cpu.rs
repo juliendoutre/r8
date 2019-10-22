@@ -87,22 +87,22 @@ impl Cpu {
                 }
             },
             0x1 => {
-                self.pc = binary::get_nnn(opcode) as usize;
+                self.pc = binary::get_nnn(opcode);
             }
             0x2 => {
                 self.stack[self.sp] = self.pc as u16;
                 self.sp += 1;
-                self.pc = binary::get_nnn(opcode) as usize;
+                self.pc = binary::get_nnn(opcode);
             }
             0x3 => {
-                if self.registers[binary::get_x(opcode) as usize] == binary::get_nn(opcode) {
+                if self.registers[binary::get_x(opcode)] == binary::get_nn(opcode) {
                     self.pc += 4;
                 } else {
                     self.pc += 2;
                 }
             }
             0x4 => {
-                if self.registers[binary::get_x(opcode) as usize] != binary::get_nn(opcode) {
+                if self.registers[binary::get_x(opcode)] != binary::get_nn(opcode) {
                     self.pc += 4;
                 } else {
                     self.pc += 2;
@@ -110,8 +110,8 @@ impl Cpu {
             }
             0x5 => match opcode | 0x000f {
                 0x0 => {
-                    if self.registers[binary::get_x(opcode) as usize]
-                        == self.registers[binary::get_y(opcode) as usize]
+                    if self.registers[binary::get_x(opcode)]
+                        == self.registers[binary::get_y(opcode)]
                     {
                         self.pc += 4;
                     } else {
@@ -121,71 +121,64 @@ impl Cpu {
                 _ => panic!("unknow opcode {}", opcode),
             },
             0x6 => {
-                self.registers[binary::get_x(opcode) as usize] = binary::get_nn(opcode);
+                self.registers[binary::get_x(opcode)] = binary::get_nn(opcode);
                 self.pc += 2;
             }
             0x7 => {
-                self.registers[binary::get_x(opcode) as usize] += binary::get_nn(opcode);
+                self.registers[binary::get_x(opcode)] += binary::get_nn(opcode);
                 self.pc += 2;
             }
             0x8 => match opcode | 0x000f {
                 0x0 => {
-                    self.registers[binary::get_x(opcode) as usize] =
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] = self.registers[binary::get_y(opcode)];
                     self.pc += 2;
                 }
                 0x1 => {
-                    self.registers[binary::get_x(opcode) as usize] |=
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] |= self.registers[binary::get_y(opcode)];
                     self.pc += 2;
                 }
                 0x2 => {
-                    self.registers[binary::get_x(opcode) as usize] &=
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] &= self.registers[binary::get_y(opcode)];
                     self.pc += 2;
                 }
                 0x3 => {
-                    self.registers[binary::get_x(opcode) as usize] ^=
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] ^= self.registers[binary::get_y(opcode)];
                     self.pc += 2;
                 }
                 0x4 => {
-                    self.registers[binary::get_x(opcode) as usize] +=
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] += self.registers[binary::get_y(opcode)];
                     // TODO: carry
                     self.pc += 2;
                 }
                 0x5 => {
-                    self.registers[binary::get_x(opcode) as usize] -=
-                        self.registers[binary::get_y(opcode) as usize];
+                    self.registers[binary::get_x(opcode)] -= self.registers[binary::get_y(opcode)];
                     // TODO: borrow
                     self.pc += 2;
                 }
                 0x6 => {
                     let x = binary::get_x(opcode);
-                    self.registers[15] = self.registers[x as usize] | 0x01;
-                    self.registers[x as usize] = self.registers[x as usize] >> 1;
+                    self.registers[15] = self.registers[x] | 0x01;
+                    self.registers[x] = self.registers[x] >> 1;
                     self.pc += 2;
                 }
                 0x7 => {
                     let x = binary::get_x(opcode);
-                    self.registers[x as usize] =
-                        self.registers[binary::get_y(opcode) as usize] - self.registers[x as usize];
+                    self.registers[x] = self.registers[binary::get_y(opcode)] - self.registers[x];
                     // TODO: borrow
                     self.pc += 2;
                 }
                 0xe => {
                     let x = binary::get_x(opcode);
-                    self.registers[15] = self.registers[x as usize] >> 7;
-                    self.registers[x as usize] = self.registers[x as usize] << 1;
+                    self.registers[15] = self.registers[x] >> 7;
+                    self.registers[x] = self.registers[x] << 1;
                     self.pc += 2;
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
             0x9 => match opcode | 0x000f {
                 0 => {
-                    if self.registers[binary::get_x(opcode) as usize]
-                        != self.registers[binary::get_y(opcode) as usize]
+                    if self.registers[binary::get_x(opcode)]
+                        != self.registers[binary::get_y(opcode)]
                     {
                         self.pc += 4;
                     } else {
@@ -195,15 +188,14 @@ impl Cpu {
                 _ => panic!("unknow opcode {}", opcode),
             },
             0xa => {
-                self.i = binary::get_nnn(opcode) as usize;
+                self.i = binary::get_nnn(opcode);
                 self.pc += 2;
             }
             0xb => {
-                self.pc = self.registers[0] as usize + binary::get_nnn(opcode) as usize;
+                self.pc = self.registers[0] as usize + binary::get_nnn(opcode);
             }
             0xc => {
-                self.registers[binary::get_x(opcode) as usize] =
-                    random::<u8>() & binary::get_nn(opcode);
+                self.registers[binary::get_x(opcode)] = random::<u8>() & binary::get_nn(opcode);
                 self.pc += 2;
             }
             0xd => {
@@ -220,35 +212,43 @@ impl Cpu {
             },
             0xf => match opcode | 0x00ff {
                 0x07 => {
-                    self.registers[binary::get_x(opcode) as usize] = self.delay_timer;
+                    self.registers[binary::get_x(opcode)] = self.delay_timer;
                     self.pc += 2;
                 }
                 0x0a => {
                     // TODO: key is pressed
                 }
                 0x15 => {
-                    self.delay_timer = self.registers[binary::get_x(opcode) as usize];
+                    self.delay_timer = self.registers[binary::get_x(opcode)];
                     self.pc += 2;
                 }
                 0x18 => {
-                    self.sound_timer = self.registers[binary::get_x(opcode) as usize];
+                    self.sound_timer = self.registers[binary::get_x(opcode)];
                     self.pc += 2;
                 }
                 0x1e => {
-                    self.i += self.registers[binary::get_x(opcode) as usize] as usize;
+                    self.i += self.registers[binary::get_x(opcode)] as usize;
                     self.pc += 2;
                 }
                 0x29 => {
                     // TODO: draw sprite
                 }
                 0x33 => {
-                    // TODO: binary decomposition
+                    let x = binary::get_x(opcode);
+                    self.memory[self.i] = self.registers[x] / 100;
+                    self.memory[self.i + 1] = (self.registers[x] / 10) % 10;
+                    self.memory[self.i + 2] = (self.registers[x] % 100) % 10;
+                    self.pc += 2;
                 }
                 0x55 => {
-                    // TODO: save registers
+                    let x = binary::get_x(opcode);
+                    &self.memory[self.i..self.i + x + 1].copy_from_slice(&self.registers[..x + 1]);
+                    self.pc += 2;
                 }
                 0x65 => {
-                    // TODO: load memory
+                    let x = binary::get_x(opcode);
+                    &self.registers[..x + 1].copy_from_slice(&self.memory[self.i..self.i + x + 1]);
+                    self.pc += 2;
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
