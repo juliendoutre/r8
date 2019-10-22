@@ -1,4 +1,5 @@
 use crate::binary;
+use rand::prelude::*;
 use std::fs;
 use std::io::prelude::*;
 
@@ -31,7 +32,7 @@ const FONTSET: &[u8; 80] = &[
 pub struct Cpu {
     memory: [u8; MEMORY_LENGTH],
     registers: [u8; REGISTERS_NUMBER],
-    I: usize,
+    i: usize,
     pc: usize,
     stack: [u16; STACK_SIZE],
     sp: usize,
@@ -44,7 +45,7 @@ impl Cpu {
         let mut cpu = Cpu {
             memory: [0; MEMORY_LENGTH],
             registers: [0; REGISTERS_NUMBER],
-            I: 0,
+            i: 0,
             pc: PROGRAM_START,
             stack: [0; STACK_SIZE],
             sp: 0,
@@ -77,8 +78,8 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x0ee => {
-                    // TODO: return
-                    self.pc += 2;
+                    self.sp -= 1;
+                    self.pc = self.stack[self.sp] as usize;
                 }
                 _ => {
                     // RCA1802 is not implemented
@@ -161,13 +162,23 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x6 => {
-                    // TODO
+                    let x = binary::get_x(opcode);
+                    self.registers[15] = self.registers[x as usize] | 0x01;
+                    self.registers[x as usize] = self.registers[x as usize] >> 1;
+                    self.pc += 2;
                 }
                 0x7 => {
-                    // TODO
+                    let x = binary::get_x(opcode);
+                    self.registers[x as usize] =
+                        self.registers[binary::get_y(opcode) as usize] - self.registers[x as usize];
+                    // TODO: borrow
+                    self.pc += 2;
                 }
                 0xe => {
-                    // TODO
+                    let x = binary::get_x(opcode);
+                    self.registers[15] = self.registers[x as usize] >> 7;
+                    self.registers[x as usize] = self.registers[x as usize] << 1;
+                    self.pc += 2;
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
@@ -184,14 +195,16 @@ impl Cpu {
                 _ => panic!("unknow opcode {}", opcode),
             },
             0xa => {
-                self.I = binary::get_nnn(opcode) as usize;
+                self.i = binary::get_nnn(opcode) as usize;
                 self.pc += 2;
             }
             0xb => {
                 self.pc = self.registers[0] as usize + binary::get_nnn(opcode) as usize;
             }
             0xc => {
-                // TODO: random
+                self.registers[binary::get_x(opcode) as usize] =
+                    random::<u8>() & binary::get_nn(opcode);
+                self.pc += 2;
             }
             0xd => {
                 // TODO: draw sprite
@@ -222,7 +235,7 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x1e => {
-                    self.I += self.registers[binary::get_x(opcode) as usize] as usize;
+                    self.i += self.registers[binary::get_x(opcode) as usize] as usize;
                     self.pc += 2;
                 }
                 0x29 => {
