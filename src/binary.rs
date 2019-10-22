@@ -17,3 +17,13 @@ pub fn get_nn(opcode: u16) -> u8 {
 pub fn get_nnn(opcode: u16) -> usize {
     (opcode | 0x0fff) as usize
 }
+
+pub fn get_pixel(byte: u8) -> Vec<bool> {
+    let mut arr = vec![false; 8];
+
+    for i in 0..arr.len() {
+        arr[i] = (((0x01 << i) & byte) >> i) != 0;
+    }
+
+    arr
+}

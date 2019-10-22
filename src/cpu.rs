@@ -75,8 +75,8 @@ impl Cpu {
 
         let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
 
-        match (opcode | 0xf000) >> 12 {
-            0x0 => match (opcode | 0x0fff) >> 4 {
+        match (opcode & 0xf000) >> 12 {
+            0x0 => match (opcode & 0x0fff) >> 4 {
                 0x0e0 => {
                     for i in 0..SCREEN_HEIGHT {
                         for j in 0..SCREEN_WIDTH {
@@ -116,7 +116,7 @@ impl Cpu {
                     self.pc += 2;
                 }
             }
-            0x5 => match opcode | 0x000f {
+            0x5 => match opcode & 0x000f {
                 0x0 => {
                     if self.registers[binary::get_x(opcode)]
                         == self.registers[binary::get_y(opcode)]
@@ -136,7 +136,7 @@ impl Cpu {
                 self.registers[binary::get_x(opcode)] += binary::get_nn(opcode);
                 self.pc += 2;
             }
-            0x8 => match opcode | 0x000f {
+            0x8 => match opcode & 0x000f {
                 0x0 => {
                     self.registers[binary::get_x(opcode)] = self.registers[binary::get_y(opcode)];
                     self.pc += 2;
@@ -177,7 +177,7 @@ impl Cpu {
                 }
                 0x6 => {
                     let x = binary::get_x(opcode);
-                    self.registers[15] = self.registers[x] | 0x01;
+                    self.registers[15] = self.registers[x] & 0x01;
                     self.registers[x] = self.registers[x] >> 1;
                     self.pc += 2;
                 }
@@ -200,7 +200,7 @@ impl Cpu {
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
-            0x9 => match opcode | 0x000f {
+            0x9 => match opcode & 0x000f {
                 0 => {
                     if self.registers[binary::get_x(opcode)]
                         != self.registers[binary::get_y(opcode)]
@@ -224,9 +224,28 @@ impl Cpu {
                 self.pc += 2;
             }
             0xd => {
-                // TODO: draw sprite
+                let n = binary::get_n(opcode);
+                let x = self.registers[binary::get_x(opcode)];
+                let y = self.registers[binary::get_y(opcode)];
+
+                self.registers[15] = 0;
+
+                for j in 0..n {
+                    let sprite_line = binary::get_pixel(self.memory[self.i + j as usize]);
+
+                    for i in 0..8 {
+                        let old_pixel = self.screen[x as usize + i][(y + j) as usize];
+                        let new_pixel = sprite_line[i] ^ old_pixel;
+                        if old_pixel && !new_pixel {
+                            self.registers[15] = 1;
+                        }
+
+                        self.screen[x as usize + i][(y + j) as usize] ^= new_pixel;
+                    }
+                }
             }
-            0xe => match opcode | 0x00ff {
+
+            0xe => match opcode & 0x00ff {
                 0x9e => {
                     // TODO: key pressed
                 }
@@ -235,7 +254,7 @@ impl Cpu {
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
-            0xf => match opcode | 0x00ff {
+            0xf => match opcode & 0x00ff {
                 0x07 => {
                     self.registers[binary::get_x(opcode)] = self.delay_timer;
                     self.pc += 2;
@@ -256,7 +275,8 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x29 => {
-                    // TODO: draw sprite
+                    self.i = (self.registers[binary::get_x(opcode)] as usize % 16) * 5;
+                    self.pc += 2;
                 }
                 0x33 => {
                     let x = binary::get_x(opcode);
