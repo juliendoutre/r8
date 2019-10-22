@@ -74,22 +74,58 @@ impl Cpu {
             0x0 => match (opcode | 0x0fff) >> 4 {
                 0x0e0 => {
                     // TODO: clear the screen
+                    self.pc += 2;
                 }
                 0x0ee => {
                     // TODO: return
+                    self.pc += 2;
                 }
                 _ => {
                     // RCA1802 is not implemented
+                    self.pc += 2;
                 }
             },
-            0x1 => {}
-            0x2 => {}
-            0x3 => {}
-            0x4 => {}
-            0x5 => {}
-            0x6 => {}
-            0x7 => {}
-            0x8 => match (opcode | 0x000f) as u8 {
+            0x1 => {
+                self.pc = binary::get_nnn(opcode) as usize;
+            }
+            0x2 => {
+                self.stack[self.sp] = self.pc as u16;
+                self.sp += 1;
+                self.pc = binary::get_nnn(opcode) as usize;
+            }
+            0x3 => {
+                if self.registers[binary::get_x(opcode) as usize] == binary::get_nn(opcode) {
+                    self.pc += 4;
+                } else {
+                    self.pc += 2;
+                }
+            }
+            0x4 => {
+                if self.registers[binary::get_x(opcode) as usize] != binary::get_nn(opcode) {
+                    self.pc += 4;
+                } else {
+                    self.pc += 2;
+                }
+            }
+            0x5 => match opcode | 0x000f {
+                0x0 => {
+                    if self.registers[binary::get_x(opcode) as usize]
+                        == self.registers[binary::get_y(opcode) as usize]
+                    {
+                        self.pc += 4;
+                    } else {
+                        self.pc += 2;
+                    }
+                }
+                _ => panic!("unknow opcode {}", opcode),
+            },
+            0x6 => {
+                self.registers[binary::get_x(opcode) as usize] = binary::get_nn(opcode);
+            }
+            0x7 => {
+                self.registers[binary::get_x(opcode) as usize] += binary::get_nn(opcode);
+            }
+            0x8 => match opcode | 0x000f {
                 0x0 => {}
                 0x1 => {}
                 0x2 => {}
@@ -106,12 +142,12 @@ impl Cpu {
             0xb => {}
             0xc => {}
             0xd => {}
-            0xe => match (opcode | 0x00ff) as u8 {
+            0xe => match opcode | 0x00ff {
                 0x9e => {}
                 0xa1 => {}
                 _ => panic!("unknow opcode {}", opcode),
             },
-            0xf => match (opcode | 0x00ff) as u8 {
+            0xf => match opcode | 0x00ff {
                 0x07 => {}
                 0x0a => {}
                 0x15 => {}
@@ -125,8 +161,6 @@ impl Cpu {
             },
             _ => panic!("unknow opcode {}", opcode),
         }
-
-        self.pc += 2;
 
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
