@@ -146,13 +146,25 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x4 => {
-                    self.registers[binary::get_x(opcode)] += self.registers[binary::get_y(opcode)];
-                    // TODO: carry
+                    let x = binary::get_x(opcode);
+                    let y = binary::get_y(opcode);
+                    if self.registers[x] > (0xff - self.registers[y]) {
+                        self.registers[15] = 1;
+                    } else {
+                        self.registers[15] = 0;
+                    }
+                    self.registers[x] += self.registers[y];
                     self.pc += 2;
                 }
                 0x5 => {
-                    self.registers[binary::get_x(opcode)] -= self.registers[binary::get_y(opcode)];
-                    // TODO: borrow
+                    let x = binary::get_x(opcode);
+                    let y = binary::get_y(opcode);
+                    if self.registers[y] > self.registers[x] {
+                        self.registers[15] = 0;
+                    } else {
+                        self.registers[15] = 1;
+                    }
+                    self.registers[x] -= self.registers[y];
                     self.pc += 2;
                 }
                 0x6 => {
@@ -163,8 +175,13 @@ impl Cpu {
                 }
                 0x7 => {
                     let x = binary::get_x(opcode);
-                    self.registers[x] = self.registers[binary::get_y(opcode)] - self.registers[x];
-                    // TODO: borrow
+                    let y = binary::get_y(opcode);
+                    if self.registers[x] > self.registers[y] {
+                        self.registers[15] = 0;
+                    } else {
+                        self.registers[15] = 1;
+                    }
+                    self.registers[x] = self.registers[y] - self.registers[x];
                     self.pc += 2;
                 }
                 0xe => {
