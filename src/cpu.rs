@@ -1,11 +1,10 @@
-use crate::binary;
+use crate::{binary, stack};
 use rand::prelude::*;
 use std::fs;
 use std::io::prelude::*;
 
 pub const MEMORY_LENGTH: usize = 4096;
 pub const REGISTERS_NUMBER: usize = 16;
-pub const STACK_SIZE: usize = 16;
 pub const PROGRAM_START: usize = 512;
 pub const FONTSET_START: usize = 0;
 pub const FONTSET_END: usize = 80;
@@ -36,8 +35,7 @@ pub struct Cpu {
     registers: [u8; REGISTERS_NUMBER],
     i: usize,
     pc: usize,
-    stack: [u16; STACK_SIZE],
-    sp: usize,
+    stack: stack::Stack,
     delay_timer: u8,
     sound_timer: u8,
     screen: [[bool; SCREEN_WIDTH]; SCREEN_HEIGHT],
@@ -50,8 +48,7 @@ impl Cpu {
             registers: [0; REGISTERS_NUMBER],
             i: 0,
             pc: PROGRAM_START,
-            stack: [0; STACK_SIZE],
-            sp: 0,
+            stack: stack::Stack::new(),
             delay_timer: 0,
             sound_timer: 0,
             screen: [[false; SCREEN_WIDTH]; SCREEN_HEIGHT],
@@ -86,8 +83,7 @@ impl Cpu {
                     self.pc += 2;
                 }
                 0x0ee => {
-                    self.sp -= 1;
-                    self.pc = self.stack[self.sp] as usize;
+                    self.pc = self.stack.pop() as usize;
                 }
                 _ => {
                     // RCA1802 is not implemented
@@ -98,8 +94,7 @@ impl Cpu {
                 self.pc = binary::get_nnn(opcode);
             }
             0x2 => {
-                self.stack[self.sp] = self.pc as u16;
-                self.sp += 1;
+                self.stack.push(self.pc as u16);
                 self.pc = binary::get_nnn(opcode);
             }
             0x3 => {
