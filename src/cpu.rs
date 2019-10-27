@@ -2,6 +2,8 @@ use crate::{binary, stack};
 use rand::prelude::*;
 use std::fs;
 use std::io::prelude::*;
+use std::thread;
+use std::time;
 
 pub const MEMORY_LENGTH: usize = 4096;
 pub const REGISTERS_NUMBER: usize = 16;
@@ -10,6 +12,8 @@ pub const FONTSET_START: usize = 0;
 pub const FONTSET_END: usize = 80;
 pub const SCREEN_WIDTH: usize = 64;
 pub const SCREEN_HEIGHT: usize = 32;
+pub const CYCLE_FREQUENCY: u64 = 60;
+pub const CYCLE_DURATION: time::Duration = time::Duration::from_millis(1000 / CYCLE_FREQUENCY);
 
 const FONTSET: &[u8; 80] = &[
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -311,5 +315,7 @@ impl Cpu {
         if self.sound_timer > 0 {
             self.sound_timer -= 1;
         }
+
+        thread::sleep(CYCLE_DURATION);
     }
 }
