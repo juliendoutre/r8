@@ -38,7 +38,7 @@ pub struct Cpu {
     stack: stack::Stack,
     delay_timer: u8,
     sound_timer: u8,
-    screen: [[bool; SCREEN_WIDTH]; SCREEN_HEIGHT],
+    screen: [[bool; SCREEN_HEIGHT]; SCREEN_WIDTH],
 }
 
 impl Cpu {
@@ -51,7 +51,7 @@ impl Cpu {
             stack: stack::Stack::new(),
             delay_timer: 0,
             sound_timer: 0,
-            screen: [[false; SCREEN_WIDTH]; SCREEN_HEIGHT],
+            screen: [[false; SCREEN_HEIGHT]; SCREEN_WIDTH],
         };
 
         &cpu.memory[FONTSET_START..FONTSET_END].copy_from_slice(FONTSET);
@@ -67,7 +67,7 @@ impl Cpu {
 
     pub fn emulate(&mut self) {
         if self.pc > self.memory.len() - 2 {
-            panic!("stack overflow");
+            panic!("memory overflow");
         }
 
         let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
@@ -75,15 +75,17 @@ impl Cpu {
         match (opcode & 0xf000) >> 12 {
             0x0 => match (opcode & 0x0fff) >> 4 {
                 0x0e0 => {
-                    for i in 0..SCREEN_HEIGHT {
-                        for j in 0..SCREEN_WIDTH {
+                    for i in 0..SCREEN_WIDTH {
+                        for j in 0..SCREEN_HEIGHT {
                             self.screen[i][j] = false;
                         }
                     }
+
                     self.pc += 2;
                 }
                 0x0ee => {
                     self.pc = self.stack.pop() as usize;
+                    self.pc += 2;
                 }
                 _ => {
                     // RCA1802 is not implemented
@@ -220,32 +222,37 @@ impl Cpu {
             }
             0xd => {
                 let n = binary::get_n(opcode);
-                let x = self.registers[binary::get_x(opcode)];
-                let y = self.registers[binary::get_y(opcode)];
+                let x = self.registers[binary::get_x(opcode)] as usize;
+                let y = self.registers[binary::get_y(opcode)] as usize;
 
                 self.registers[15] = 0;
 
-                for j in 0..n {
-                    let sprite_line = binary::get_pixel(self.memory[self.i + j as usize]);
+                for i in 0..n as usize {
+                    let sprite_line = binary::get_pixel(self.memory[self.i + i]);
 
-                    for i in 0..8 {
-                        let old_pixel = self.screen[x as usize + i][(y + j) as usize];
+                    for j in 0..8 {
+                        let old_pixel =
+                            self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT];
                         let new_pixel = sprite_line[i] ^ old_pixel;
                         if old_pixel && !new_pixel {
                             self.registers[15] = 1;
                         }
 
-                        self.screen[x as usize + i][(y + j) as usize] ^= new_pixel;
+                        self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT] ^= new_pixel;
                     }
                 }
+
+                self.pc += 2;
             }
 
             0xe => match opcode & 0x00ff {
                 0x9e => {
                     // TODO: key pressed
+                    self.pc += 2;
                 }
                 0xa1 => {
                     // TODO: key not pressed
+                    self.pc += 2;
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
@@ -256,6 +263,8 @@ impl Cpu {
                 }
                 0x0a => {
                     // TODO: key is pressed
+                    println!("waiting for a key to be pressed");
+                    self.pc += 2;
                 }
                 0x15 => {
                     self.delay_timer = self.registers[binary::get_x(opcode)];
