@@ -1,4 +1,6 @@
 use crate::{binary, stack};
+use piston_window::keyboard;
+use piston_window::Button::Keyboard;
 use rand::prelude::*;
 use std::fs;
 use std::io::prelude::*;
@@ -11,11 +13,6 @@ pub const REGISTERS_NUMBER: usize = 16;
 pub const PROGRAM_START: usize = 512;
 pub const FONTSET_START: usize = 0;
 pub const FONTSET_END: usize = 80;
-pub const SCREEN_WIDTH: usize = 64;
-pub const SCREEN_HEIGHT: usize = 32;
-pub const CYCLE_FREQUENCY: u64 = 60;
-pub const CYCLE_DURATION: time::Duration = time::Duration::from_millis(1000 / CYCLE_FREQUENCY);
-
 const FONTSET: &[u8; 80] = &[
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -34,6 +31,11 @@ const FONTSET: &[u8; 80] = &[
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
+pub const SCREEN_WIDTH: usize = 64;
+pub const SCREEN_HEIGHT: usize = 32;
+pub const KEYS_NUMBER: usize = 16;
+pub const CYCLE_FREQUENCY: u64 = 60;
+pub const CYCLE_DURATION: time::Duration = time::Duration::from_millis(1000 / CYCLE_FREQUENCY);
 
 pub struct Cpu {
     memory: [u8; MEMORY_LENGTH],
@@ -44,6 +46,7 @@ pub struct Cpu {
     delay_timer: u8,
     sound_timer: u8,
     pub screen: [[bool; SCREEN_HEIGHT]; SCREEN_WIDTH],
+    keys: [bool; KEYS_NUMBER],
 }
 
 impl Cpu {
@@ -57,6 +60,7 @@ impl Cpu {
             delay_timer: 0,
             sound_timer: 0,
             screen: [[false; SCREEN_HEIGHT]; SCREEN_WIDTH],
+            keys: [false; KEYS_NUMBER],
         };
 
         &cpu.memory[FONTSET_START..FONTSET_END].copy_from_slice(FONTSET);
@@ -68,6 +72,114 @@ impl Cpu {
         let mut file = fs::File::open(path).unwrap();
         let program_size = file.read(&mut self.memory[PROGRAM_START..]).unwrap();
         println!("{} bytes loaded into memory", program_size);
+    }
+
+    pub fn press_key(&mut self, args: &piston_window::Button) {
+        match *args {
+            Keyboard(keyboard::Key::D1) => {
+                self.keys[1] = true;
+            }
+            Keyboard(keyboard::Key::D2) => {
+                self.keys[2] = true;
+            }
+            Keyboard(keyboard::Key::D3) => {
+                self.keys[3] = true;
+            }
+            Keyboard(keyboard::Key::D4) => {
+                self.keys[12] = true;
+            }
+            Keyboard(keyboard::Key::Q) => {
+                self.keys[4] = true;
+            }
+            Keyboard(keyboard::Key::W) => {
+                self.keys[5] = true;
+            }
+            Keyboard(keyboard::Key::E) => {
+                self.keys[6] = true;
+            }
+            Keyboard(keyboard::Key::R) => {
+                self.keys[13] = true;
+            }
+            Keyboard(keyboard::Key::A) => {
+                self.keys[7] = true;
+            }
+            Keyboard(keyboard::Key::S) => {
+                self.keys[8] = true;
+            }
+            Keyboard(keyboard::Key::D) => {
+                self.keys[9] = true;
+            }
+            Keyboard(keyboard::Key::F) => {
+                self.keys[14] = true;
+            }
+            Keyboard(keyboard::Key::Z) => {
+                self.keys[10] = true;
+            }
+            Keyboard(keyboard::Key::X) => {
+                self.keys[0] = true;
+            }
+            Keyboard(keyboard::Key::C) => {
+                self.keys[11] = true;
+            }
+            Keyboard(keyboard::Key::V) => {
+                self.keys[15] = true;
+            }
+            _ => {}
+        }
+    }
+
+    pub fn release_key(&mut self, args: &piston_window::Button) {
+        match *args {
+            Keyboard(keyboard::Key::D1) => {
+                self.keys[1] = false;
+            }
+            Keyboard(keyboard::Key::D2) => {
+                self.keys[2] = false;
+            }
+            Keyboard(keyboard::Key::D3) => {
+                self.keys[3] = false;
+            }
+            Keyboard(keyboard::Key::D4) => {
+                self.keys[12] = false;
+            }
+            Keyboard(keyboard::Key::Q) => {
+                self.keys[4] = false;
+            }
+            Keyboard(keyboard::Key::W) => {
+                self.keys[5] = false;
+            }
+            Keyboard(keyboard::Key::E) => {
+                self.keys[6] = false;
+            }
+            Keyboard(keyboard::Key::R) => {
+                self.keys[13] = false;
+            }
+            Keyboard(keyboard::Key::A) => {
+                self.keys[7] = false;
+            }
+            Keyboard(keyboard::Key::S) => {
+                self.keys[8] = false;
+            }
+            Keyboard(keyboard::Key::D) => {
+                self.keys[9] = false;
+            }
+            Keyboard(keyboard::Key::F) => {
+                self.keys[14] = false;
+            }
+            Keyboard(keyboard::Key::Z) => {
+                self.keys[10] = false;
+            }
+            Keyboard(keyboard::Key::X) => {
+                self.keys[0] = false;
+            }
+            Keyboard(keyboard::Key::C) => {
+                self.keys[11] = false;
+            }
+            Keyboard(keyboard::Key::V) => {
+                self.keys[15] = false;
+            }
+            _ => {}
+        }
     }
 
     pub fn emulate(&mut self) {
@@ -260,12 +372,18 @@ impl Cpu {
 
             0xe => match opcode & 0x00ff {
                 0x9e => {
-                    // TODO: key pressed
-                    self.pc += 2;
+                    if self.keys[self.registers[binary::get_x(opcode)] as usize] {
+                        self.pc += 4;
+                    } else {
+                        self.pc += 2;
+                    }
                 }
                 0xa1 => {
-                    // TODO: key not pressed
-                    self.pc += 2;
+                    if !self.keys[self.registers[binary::get_x(opcode)] as usize] {
+                        self.pc += 4;
+                    } else {
+                        self.pc += 2;
+                    }
                 }
                 _ => panic!("unknow opcode {}", opcode),
             },
@@ -325,6 +443,6 @@ impl Cpu {
             self.sound_timer -= 1;
         }
 
-        thread::sleep(CYCLE_DURATION);
+        // thread::sleep(CYCLE_DURATION);
     }
 }
