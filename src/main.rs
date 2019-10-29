@@ -67,7 +67,7 @@ fn main() {
         }
 
         if let Some(ref args) = e.release_args() {
-            vm.press_key(args);
+            vm.release_key(args);
         }
 
         vm.emulate();
