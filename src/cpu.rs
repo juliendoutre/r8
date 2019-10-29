@@ -2,6 +2,7 @@ use crate::{binary, stack};
 use rand::prelude::*;
 use std::fs;
 use std::io::prelude::*;
+use std::num;
 use std::thread;
 use std::time;
 
@@ -134,7 +135,10 @@ impl Cpu {
                 self.pc += 2;
             }
             0x7 => {
-                self.registers[binary::get_x(opcode)] += binary::get_nn(opcode);
+                self.registers[binary::get_x(opcode)] =
+                    (num::Wrapping(self.registers[binary::get_x(opcode)])
+                        + num::Wrapping(binary::get_nn(opcode)))
+                    .0;
                 self.pc += 2;
             }
             0x8 => match opcode & 0x000f {
@@ -162,7 +166,8 @@ impl Cpu {
                     } else {
                         self.registers[15] = 0;
                     }
-                    self.registers[x] += self.registers[y];
+                    self.registers[x] =
+                        (num::Wrapping(self.registers[x]) + num::Wrapping(self.registers[y])).0;
                     self.pc += 2;
                 }
                 0x5 => {
@@ -173,7 +178,8 @@ impl Cpu {
                     } else {
                         self.registers[15] = 1;
                     }
-                    self.registers[x] -= self.registers[y];
+                    self.registers[x] =
+                        (num::Wrapping(self.registers[x]) - num::Wrapping(self.registers[y])).0;
                     self.pc += 2;
                 }
                 0x6 => {
@@ -190,7 +196,8 @@ impl Cpu {
                     } else {
                         self.registers[15] = 1;
                     }
-                    self.registers[x] = self.registers[y] - self.registers[x];
+                    self.registers[x] =
+                        (num::Wrapping(self.registers[y]) - num::Wrapping(self.registers[x])).0;
                     self.pc += 2;
                 }
                 0xe => {
