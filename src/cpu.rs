@@ -238,7 +238,7 @@ impl Cpu {
 
                 self.registers[15] = 0;
 
-                for i in 0..n as usize {
+                for i in 0..n {
                     let sprite_line = binary::get_pixel(self.memory[self.i + i]);
 
                     for j in 0..8 {
