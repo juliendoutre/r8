@@ -42,7 +42,7 @@ pub struct Cpu {
     stack: stack::Stack,
     delay_timer: u8,
     sound_timer: u8,
-    screen: [[bool; SCREEN_HEIGHT]; SCREEN_WIDTH],
+    pub screen: [[bool; SCREEN_HEIGHT]; SCREEN_WIDTH],
 }
 
 impl Cpu {

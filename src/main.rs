@@ -1,20 +1,21 @@
-// use glutin_window::GlutinWindow as Window;
-// use opengl_graphics::{GlGraphics, OpenGL};
-// use piston::event_loop::*;
-// use piston::input::*;
-// use piston::window::WindowSettings;
+use piston_window::*;
 use r8::cpu;
 use std::env;
 use std::process;
 
-fn main() {
-    // let opengl = OpenGL::V3_2;
+const PIXEL_SIZE: usize = 10;
 
-    // let mut window: Window = WindowSettings::new("", [64, 32])
-    //     .graphics_api(opengl)
-    //     .exit_on_esc(true)
-    //     .build()
-    //     .unwrap();
+fn main() {
+    let mut window: PistonWindow = WindowSettings::new(
+        "r8",
+        [
+            (cpu::SCREEN_WIDTH * PIXEL_SIZE) as u32,
+            (cpu::SCREEN_HEIGHT * PIXEL_SIZE) as u32,
+        ],
+    )
+    .exit_on_esc(true)
+    .build()
+    .unwrap();
 
     let mut vm = cpu::Cpu::new();
 
@@ -28,7 +29,32 @@ fn main() {
     let path: &str = &args[1];
     vm.load(path);
 
-    loop {
+    while let Some(e) = window.next() {
         vm.emulate();
+
+        window.draw_2d(&e, |c, g, _device| {
+            clear(color::BLACK, g);
+
+            for i in 0..cpu::SCREEN_WIDTH {
+                for j in 0..cpu::SCREEN_HEIGHT {
+                    let mut color = color::BLACK;
+                    if vm.screen[i][j] {
+                        color = graphics::color::WHITE;
+                    }
+
+                    rectangle(
+                        color,
+                        [
+                            (i * PIXEL_SIZE) as f64,
+                            (j * PIXEL_SIZE) as f64,
+                            PIXEL_SIZE as f64,
+                            PIXEL_SIZE as f64,
+                        ],
+                        c.transform,
+                        g,
+                    );
+                }
+            }
+        });
     }
 }
