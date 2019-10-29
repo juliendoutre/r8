@@ -77,7 +77,7 @@ impl Cpu {
         let opcode: u16 = ((self.memory[self.pc]) as u16) << 8 | self.memory[self.pc + 1] as u16;
 
         match (opcode & 0xf000) >> 12 {
-            0x0 => match (opcode & 0x0fff) >> 4 {
+            0x0 => match opcode & 0x0fff {
                 0x0e0 => {
                     for i in 0..SCREEN_WIDTH {
                         for j in 0..SCREEN_HEIGHT {
@@ -235,14 +235,16 @@ impl Cpu {
                     let sprite_line = binary::get_pixel(self.memory[self.i + i]);
 
                     for j in 0..8 {
-                        let old_pixel =
-                            self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT];
-                        let new_pixel = sprite_line[j] ^ old_pixel;
-                        if old_pixel && !new_pixel {
-                            self.registers[15] = 1;
-                        }
+                        let pixel = self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT];
 
-                        self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT] ^= new_pixel;
+                        if sprite_line[j] {
+                            if pixel {
+                                self.registers[15] = 1;
+                            }
+
+                            self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT] =
+                                !self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT];
+                        }
                     }
                 }
 
