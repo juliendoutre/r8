@@ -29,32 +29,40 @@ fn main() {
     let path: &str = &args[1];
     vm.load(path);
 
+    let mut refresh_counter = 0;
+
     while let Some(e) = window.next() {
         vm.emulate();
 
-        window.draw_2d(&e, |c, g, _device| {
-            clear(color::BLACK, g);
+        if refresh_counter == 3 {
+            window.draw_2d(&e, |c, g, _device| {
+                clear(color::BLACK, g);
 
-            for i in 0..cpu::SCREEN_WIDTH {
-                for j in 0..cpu::SCREEN_HEIGHT {
-                    let mut color = color::BLACK;
-                    if vm.screen[i][j] {
-                        color = graphics::color::WHITE;
+                for i in 0..cpu::SCREEN_WIDTH {
+                    for j in 0..cpu::SCREEN_HEIGHT {
+                        let mut color = color::BLACK;
+
+                        if vm.screen[i][j] {
+                            color = graphics::color::WHITE;
+                        }
+
+                        rectangle(
+                            color,
+                            [
+                                (i * PIXEL_SIZE) as f64,
+                                (j * PIXEL_SIZE) as f64,
+                                PIXEL_SIZE as f64,
+                                PIXEL_SIZE as f64,
+                            ],
+                            c.transform,
+                            g,
+                        );
                     }
-
-                    rectangle(
-                        color,
-                        [
-                            (i * PIXEL_SIZE) as f64,
-                            (j * PIXEL_SIZE) as f64,
-                            PIXEL_SIZE as f64,
-                            PIXEL_SIZE as f64,
-                        ],
-                        c.transform,
-                        g,
-                    );
                 }
-            }
-        });
+            });
+        }
+
+        refresh_counter += 1;
+        refresh_counter %= 4;
     }
 }

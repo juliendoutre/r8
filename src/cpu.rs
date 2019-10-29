@@ -237,7 +237,7 @@ impl Cpu {
                     for j in 0..8 {
                         let old_pixel =
                             self.screen[(x + j) % SCREEN_WIDTH][(y + i) % SCREEN_HEIGHT];
-                        let new_pixel = sprite_line[i] ^ old_pixel;
+                        let new_pixel = sprite_line[j] ^ old_pixel;
                         if old_pixel && !new_pixel {
                             self.registers[15] = 1;
                         }
