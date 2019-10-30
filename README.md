@@ -13,3 +13,8 @@ cargo run <rom_name>
 ```shell
 cargo test
 ```
+
+## Resources
+
+* [*How to write an emulator (CHIP-8 interpreter)*, Laurence Muller, Multigesture.NET](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/)
+* [*CHIP-8*, Wikipédia](https://en.wikipedia.org/wiki/CHIP-8)
