@@ -5,7 +5,7 @@ A chip-8 emulator in Rust.
 ## Run
 
 ```shell
-cargo run <rom_name>
+cargo run <ROM_PATH>
 ```
 
 ## Tests

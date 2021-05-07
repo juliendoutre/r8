@@ -18,14 +18,10 @@ pub fn get_nnn(opcode: u16) -> usize {
     (opcode & 0x0fff) as usize
 }
 
-pub fn get_pixel(byte: u8) -> Vec<bool> {
-    let mut arr = vec![false; 8];
-
-    for i in 0..arr.len() {
-        arr[7 - i] = (((0x01 << i) & byte) >> i) != 0;
+pub fn parse_sprite_line(byte: u8, buffer: &mut [bool; 8]) {
+    for i in 0..8 {
+        buffer[7 - i] = (((0x01 << i) & byte) >> i) != 0;
     }
-
-    arr
 }
 
 #[cfg(test)]
@@ -59,7 +55,9 @@ mod tests {
 
     #[test]
     fn test_get_pixel() {
-        let result: Vec<bool> = vec![true, false, true, false, true, true, false, true];
-        assert_eq!(get_pixel(0b10101101), result);
+        let mut buffer = [false; 8];
+        parse_sprite_line(0b10101101, &mut buffer);
+
+        assert_eq!(buffer, [true, false, true, false, true, true, false, true]);
     }
 }

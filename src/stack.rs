@@ -6,7 +6,7 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub fn new() -> Stack {
+    pub fn new() -> Self {
         Stack {
             array: [0; STACK_SIZE],
             sp: 0,
@@ -25,10 +25,16 @@ impl Stack {
     pub fn pop(&mut self) -> u16 {
         if self.sp > 0 {
             self.sp -= 1;
-            return self.array[self.sp];
+            self.array[self.sp]
         } else {
             panic!("stack underflow");
         }
+    }
+}
+
+impl Default for Stack {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
