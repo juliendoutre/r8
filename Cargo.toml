@@ -5,6 +5,6 @@ authors = ["Julien Doutre <jul.doutre@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.7"
+rand = "0.9"
 piston_window = "0.98.0"
 piston2d-graphics = "0.35.0"
